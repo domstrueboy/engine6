@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>The solve a systems of linear equation</title>
+    <meta charset=UTF-8>
+    <link rel="stylesheet" type="text/css" href="main.css">
+</head>
+
+<body>
+            <div>
+                <h3>The solve a systems of linear equation:</h3>
+            </div>
+
+            <div id='two'>
+                <form id='one' onsubmit="var pattern=/[^'\w',',',';', '\x2E', '+','\x2D','\s','=','*']/; if(pattern.test(inputArea.value)) alert('Please correct input data!'); else {main(inputArea.value); return false;}">
+                <h3>Enter system of equations:</h3>
+                <textarea type='text' name='inputArea' cols='35' rows='5' onfocus="if (this.value == '3x-4y+90=80;\n3y-z-4=70\n   2z-5x+120==90') this.value = ''" onblur="if (!this.value) this.value = '3x-4y+90=80;\n3y-z-4=70\n   2z-5x+120==90'">3x-4y+90=80;\n3y-z-4=70\n   2z-5x+120==90</textarea><br>
+                <input id='Go' type='submit' value='Go!' form='one'>
+                </form>
+            </div>
+
+<script>
+var main = function(system){ //именованная функция
+  
+system = system.split("");//разбиение на массив отдельных символов
+system = system.filter(function(item){ return item != ' ';}); //очистка system от пробелов
+system = system.filter(function(item){ return item != ';';}); //очистка system от ';'
+system = system.filter(function(item){ return item != '*';}); //очистка system от '*'
+
+var system2=[];
+//Далее разделяем систему на отдельные члены
+var dlina = 0, j=0;
+var val=0, val_temp=0;
+var pattern = /['\w','\x2E', ',', '+', '\x2D']/;
+for (var i=0, len=system.length; i<len; i++){ //этот цикл формирует выходную последовательность
+    if(pattern.test(system[i])){//этот if группирует соседние цифры в одно число и помещает их в выходную последовательность
+        if(system[i]=='+'||system[i]=='-') { dlina=0; }
+        if(dlina==0) j = system2.push(system[i]) - 1;
+        
+        val_temp = system[i];
+        if(system[i]==',') val_temp = '.';
+                                                 
+        if(dlina>0){
+        system2[j] = val+val_temp;//Складываем символы
+        }
+        val = system2[j];
+        dlina++;
+    }
+    else{ system2.push(system[i]);
+          val = 0; val_temp = 0; dlina = 0;
+    }//Обнуляем значения вспомогательных переменных, подготавливая их для записи следующего числа
+}
+
+system = []; //стираю информацию из system
+j=0; 
+var k=0;
+
+system[0] = [];
+for(var i=0, len=system2.length; i<len; i++){//Разделяем на отдельные уравнения по символу перевода строки
+  if(system2[i]=='\n'){
+    j++; k=0;
+    system[j]=[];
+  }
+  system[j][k] = system2[i]; k++;
+}
+
+for(i=0, len=system.length; i<len; i++){ 
+  system[i] = system[i].filter(function(item){ return item != '\n';});
+  system[i] = system[i].filter(function(item){ return item != '=';});
+} //очистка system от '\n' и '='
+
+var X=[]; //инициализация массива решений
+X[0] = []; //в первую строку будем помещать названия переменных
+X[1] = []; //во вторую строку - значения сответствующих переменных
+
+pattern = /['A-Z','a-z']/;
+for(i=0, len=system.length; i<len; i++){//Ищем все переменные в системе
+  for(j=0, len1 = system[i].length; j<len1; j++){
+    if(pattern.test(system[i][j])){
+      for(k=0, len2=system[i][j].length; k<len2; k++){
+        if(pattern.test(system[i][j][k])){
+          if(X[0].indexOf(system[i][j].slice(k))===-1) {
+            X[0].push(system[i][j].slice(k));
+          }
+
+          break;
+        }
+      }
+    }
+  }
+}//Здесь поиск переменных закончился
+
+if(X[0].length == system.length){//Если система согласована, т.е. число уравнений = числу неизвестных, то продолжаем
+
+var m = X[0].length; //число уравнений
+var n = m; //число неизвестных
+
+var A = []; //Подготовка нулевой (расширенной) матрицы коэффициентов
+for(i=0; i<m; i++){ //число строк
+    A[i] = [];
+    for(j=0; j<len+1; j++){
+      A[i][j] = 0;
+    }
+}
+
+for(var p=0; p<m; p++){//Поиск найденных переменных в уравнении и окончательное формирование матрицы А - присвоение столбцам, соответствующим определенной переменной, соответственных коэффициентов
+  for(i=0; i<m; i++){
+    for(j=0, len1=system[i].length; j<len1; j++){
+      if(pattern.test(system[i][j])){
+        for(k=0, len=system[i][j].length; k<len; k++){
+          if(pattern.test(system[i][j][k])){
+            if( X[0][p]==system[i][j].slice(k) ) {
+              if( system[i][j].slice(0,k) == '-' ){
+                A[i][p] = A[i][p] - 1;
+              }
+              else {  if( system[i][j].slice(0,k) == '+' || isNaN(parseFloat(system[i][j].slice(0,k)))){
+                          A[i][p] = A[i][p] + 1;  
+                      }          
+                      else {
+                        A[i][p] = A[i][p] + parseFloat(system[i][j].slice(0,k));
+                      }
+              }
+            break;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+for(i=0; i<m; i++){
+    for(j=0, len=system[i].length; j<len; j++){
+        if(pattern.test(system[i][j]) == false){
+            if(isNaN(parseFloat(system[i][j]))){
+                A[i][j] = 0;
+            }
+            else{
+                if( j == system[i].length-1 ){
+                    A[i][m] = A[i][m] + parseFloat(system[i][j]);
+                }
+                else{
+                    A[i][m] = A[i][m] - parseFloat(system[i][j]);
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////Решение полученной системы/////////////////////////////////////
+
+var two = document.getElementById('two');//Вывод введенных данных
+for(i=m-1; i>=0; i--){
+ two.insertAdjacentHTML("afterEnd", "<div id='gray'><pre><h3>"+A[i]+"  </h3></pre></div>");
+}
+
+two.insertAdjacentHTML("afterEnd", "<div id='gray'><h3>Input data:</h3></div>");
+
+var buffer, b;//инициализация буфера
+
+//Прямой ход (преобразование к треугольному виду):
+  for(k=0; k<n+1; k++){
+    for(i=k; i<m; i++){
+      if(A[i][k] != 0){
+        buffer = A[i];
+        A[i] = A[k];
+        A[k] = buffer;
+        break;
+      }
+    }
+    for(i=k+1; i<m; i++){
+      b = A[i][k]/A[k][k]; //Вводим промежуточную переменную b, чтобы не считать ее каждый раз в следующем цикле.
+      for(j=k; j<=n; j++){
+        A[i][j]=A[i][j]-A[k][j]*b;
+      }
+
+    }
+
+  }
+
+//Вывод входной матрицы, преобразованной к треугольному виду
+for(i=m-1; i>=0; i--){
+two.insertAdjacentHTML("afterEnd", "<div id='gray'><pre><h3>"+A[i]+"    </h3></pre></div>");
+}
+
+two.insertAdjacentHTML("afterEnd", "<div id='gray'><h3>Transformed matrix:</h3></div>");
+
+//Обратный ход (поиск корней в случае существования единственного решения):
+var c = 0;
+  for(i=m-1; i>=0; i--){
+    if(A[m-1][m-1]===0){
+      two.insertAdjacentHTML("afterEnd", "<div id='warning'><pre><h3>The system does not have a unique solution</h3></pre></div>");
+      break;
+    }
+
+    X[1][i] = (A[i][n] - c)/A[i][i];
+    c+=A[i][i]*X[1][i];
+    two.insertAdjacentHTML("afterEnd", "<div><pre><h3>"+X[0][i]+" = "+X[1][i]+"    </h3></pre></div>"); //Вывод результата
+  }
+
+two.insertAdjacentHTML("afterEnd", "<div id='warning'><h3>Result:</h3></div>");
+
+}//Закрываю if который про согласованность системы
+else {
+  alert("The system is not compatible! ");
+  return false;
+}
+
+}//Закрывающая скобка функции main();
+</script>
+</body>
+</html>

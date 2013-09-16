@@ -1,0 +1,25 @@
+   div { 
+	    width: 360px; /* Ширина */
+	    background: #fc0; /* Цвет фона */
+	    padding: 1px; /* Поля */
+	    border-radius: 50%; /*Скругление углов*/
+	    text-align: center;
+       margin: 0 auto;
+	    -moz-box-sizing: border-box; /* Для Firefox */
+	    -webkit-box-sizing: border-box; /* Для Safari и Chrome */
+	    box-sizing: border-box; /* Для IE и Opera */
+   }
+
+   #Go{
+   		width: 100px;
+   		height: 100px;
+   		border-radius: 50%; /*Скругление углов*/
+   }
+
+   #warning{
+   		background: red; /* Цвет фона */
+   }
+
+   #gray{
+   		background: gray; /* Цвет фона */
+   }
